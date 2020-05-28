@@ -1,27 +1,25 @@
-symbol,country
-EWA,au
-EWO,at
-EWK,be
-EWZ,br
-EWC,ca
-ECH,cl
-EWQ,fr
-EWG,de
-EWH,hk
-EPI,in
-EIDO,id
-IDX,id
-EWI,it
-DXJ,jp
-EWJ,jp
-EWM,my
-EWW,mx
-ENZL,nz
-EWS,sg
-EZA,za
-EWP,es
-EWD,se
-EWL,ch
-EWT,tw
-EWU,gb
-IVV,us
+symbol,country,country_name
+EWA,au,Australia
+EWO,at,Austria
+EWK,be,Belgium
+EWZ,br,Brazil
+EWC,ca,Canada
+ECH,cl,Chile
+EWQ,fr,France
+EWG,de,Germany
+EWH,hk,Hong Kong
+EPI,in,India
+EIDO,id,Indonesia
+EWI,it,Italy
+EWJ,jp,Japan
+EWM,my,Malaysia
+EWW,mx,Mexico
+ENZL,nz,New Zealand
+EWS,sg,Singapore
+EZA,za,South Africa
+EWP,es,Spain
+EWD,se,Sweden
+EWL,ch,Switzerland
+EWT,tw,Taiwan
+EWU,gb,United Kingdom
+IVV,us,United States
