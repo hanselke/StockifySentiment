@@ -40,11 +40,13 @@ class StockifySentiment(QCAlgorithm):
         self.CustomExecution.ExecutePortfolio(self, portfolio)
 
     def DataSetup(self):
-        df = pd.read_csv(StringIO(self.Download('')))
+        df = pd.read_csv(StringIO(
+            self.Download('https://raw.githubusercontent.com/Ollie-Hooper/StockifySentiment/master/data/scores.csv')))
         data = df[['date', 'country', 's_valence']].copy()
         data['date'] = pd.to_datetime(data['date'])
         data.rename(columns={'s_valence': 'alpha_score'}, inplace=True)
-        etf_df = pd.read_csv(StringIO(self.Download('')))
+        etf_df = pd.read_csv(StringIO(
+            self.Download('https://raw.githubusercontent.com/Ollie-Hooper/StockifySentiment/master/data/etf.csv')))
         data = pd.merge(data, etf_df)
         data = data.sort_values('date')
         data.set_index(['date', 'symbol'], inplace=True)
