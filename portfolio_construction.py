@@ -3,12 +3,13 @@ import numpy as np
 import cvxpy as cv
 
 
-class OptimisationPortfolioConstructionModel():
+class OptimisationPortfolioConstructionModel:
 
-    def __init__(self, turnover, max_wt, longshort):
+    def __init__(self, turnover, max_wt, longshort, mkt_neutral):
         self.turnover = turnover
         self.max_wt = max_wt
         self.longshort = longshort
+        self.mkt_neutral = mkt_neutral
 
     def GenerateOptimalPortfolio(self, algorithm, alpha_df):
         # algorithm.Log("Generating target portfolio...")
@@ -53,7 +54,7 @@ class OptimisationPortfolioConstructionModel():
 
         for i in range(int(turnover * 100), 101, 1):
             to = i / 100
-            optimiser = Optimiser(initial_portfolio, turnover=to, max_wt=self.max_wt)
+            optimiser = Optimiser(initial_portfolio, turnover=to, max_wt=self.max_wt, mkt_neutral=self.mkt_neutral)
             optimal_portfolio, optimisation_status = optimiser.optimise()
             if optimisation_status != 'optimal':
                 algorithm.Log(f'Optimisation with {to} turnover not feasible: {optimisation_status}')
@@ -64,12 +65,13 @@ class OptimisationPortfolioConstructionModel():
 
 class Optimiser:
 
-    def __init__(self, initial_portfolio, turnover, max_wt, longshort=True):
+    def __init__(self, initial_portfolio, turnover, max_wt, longshort=True, mkt_neutral=True):
         self.symbols = np.array(initial_portfolio.index)
         self.init_wt = np.array(initial_portfolio['weight'])
         self.opt_wt = cv.Variable(self.init_wt.shape)
         self.alpha = np.array(initial_portfolio['alpha'])
         self.longshort = longshort
+        self.mkt_neutral = mkt_neutral
         self.turnover = turnover
         self.max_wt = max_wt
         if self.longshort:
@@ -100,4 +102,7 @@ class Optimiser:
         turnover = cv.sum(cv.abs(self.opt_wt - self.init_wt)) <= self.turnover * 2
         net_exposure = cv.sum(self.opt_wt) == self.net_exposure
         gross_exposure = cv.sum(cv.abs(self.opt_wt)) <= self.gross_exposure
-        return [min_wt, max_wt, turnover, net_exposure, gross_exposure]
+        if self.mkt_neutral:
+            return [min_wt, max_wt, turnover, net_exposure, gross_exposure]
+        else:
+            return [min_wt, max_wt, turnover, gross_exposure]

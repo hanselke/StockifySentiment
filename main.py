@@ -8,6 +8,13 @@ from execution import Execution
 from charting import InitCharts, PlotPerformanceChart, PlotExposureChart, PlotCountryExposureChart
 
 
+def normalise(series, equal_ls=True):
+    if equal_ls:
+        series -= series.mean()
+    sum = series.abs().sum()
+    return series.apply(lambda x: x / sum)
+
+
 class StockifySentiment(QCAlgorithm):
 
     def Initialize(self):
@@ -20,9 +27,16 @@ class StockifySentiment(QCAlgorithm):
         for etf in self.etf_list:
             self.AddEquity(etf, Resolution.Minute)
 
+        # Weighting style - normalise or alpha maximisation w/ optimisation
+        self.weighting_style = 'normalise'
+
+        # Market neutral
+        self.mkt_neutral = True
+
         # Portfolio construction model
         self.CustomPortfolioConstructionModel = OptimisationPortfolioConstructionModel(turnover=1, max_wt=0.2,
-                                                                                       longshort=True)
+                                                                                       longshort=True,
+                                                                                       mkt_neutral=self.mkt_neutral)
 
         # Execution model
         self.CustomExecution = Execution(liq_tol=0.005)
@@ -42,8 +56,15 @@ class StockifySentiment(QCAlgorithm):
         pass
 
     def RebalancePortfolio(self):
-        df = self.data.loc[self.Time - timedelta(7):self.Time].reset_index().set_index('symbol')[['alpha_score']]
-        portfolio = self.CustomPortfolioConstructionModel.GenerateOptimalPortfolio(self, df)
+        if self.weighting_style == 'normalise':
+            portfolio = normalise(
+                self.data.loc[self.Time - timedelta(7):self.Time].reset_index().set_index('symbol')['alpha_score'],
+                equal_ls=self.mkt_neutral)
+        elif self.weighting_style == 'alpha_max':
+            df = self.data.loc[self.Time - timedelta(7):self.Time].reset_index().set_index('symbol')[['alpha_score']]
+            portfolio = self.CustomPortfolioConstructionModel.GenerateOptimalPortfolio(self, df)
+        else:
+            raise Exception('Invalid weighting style')
         self.CustomExecution.ExecutePortfolio(self, portfolio)
 
     def PlotCharts(self):
