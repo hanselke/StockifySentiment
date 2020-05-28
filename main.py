@@ -3,6 +3,7 @@ import pandas as pd
 from io import StringIO
 from datetime import timedelta
 
+from portfolio_construction import OptimisationPortfolioConstructionModel
 from execution import Execution
 from charting import InitCharts, PlotPerformanceChart, PlotExposureChart, PlotCountryExposureChart
 
@@ -20,7 +21,7 @@ class StockifySentiment(QCAlgorithm):
             self.AddEquity(etf, Resolution.Minute)
 
         # Portfolio construction model
-        self.CustomPortfolioConstructionModel = OptimisationPortfolioConstructionModel(turnover=0.01, max_wt=0.05,
+        self.CustomPortfolioConstructionModel = OptimisationPortfolioConstructionModel(turnover=1, max_wt=0.2,
                                                                                        longshort=True)
 
         # Execution model
@@ -41,8 +42,8 @@ class StockifySentiment(QCAlgorithm):
         pass
 
     def RebalancePortfolio(self):
-        date = self.data.loc[self.Time - timedelta(7):self.Time].index.levels[0][0]
-        portfolio = self.CustomPortfolioConstructionModel.GenerateOptimalPortfolio(self, self.data.loc[date])
+        df = self.data.loc[self.Time - timedelta(7):self.Time].reset_index().set_index('symbol')[['alpha_score']]
+        portfolio = self.CustomPortfolioConstructionModel.GenerateOptimalPortfolio(self, df)
         self.CustomExecution.ExecutePortfolio(self, portfolio)
 
     def PlotCharts(self):
@@ -62,4 +63,4 @@ class StockifySentiment(QCAlgorithm):
         data = data.sort_values('date')
         data.set_index(['date', 'symbol'], inplace=True)
         data = data[['alpha_score']]
-        return data, etf_df['symbol'].to_list()
+        return data, etf_df['symbol'].to_list(), etf_df.set_index('symbol')['country_name'].to_dict()
