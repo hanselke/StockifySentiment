@@ -1,3 +1,8 @@
+from alpha_model import SpotifySentimentAlphaModel
+from portfolio_construction import OptimisationPortfolioConstructionModel
+from execution import Execution
+
+
 class StockifySentiment(QCAlgorithm):
 
     def Initialize(self):
@@ -11,7 +16,7 @@ class StockifySentiment(QCAlgorithm):
             self.AddEquity(etf, Resolution.Minute)
 
         # Alpha model
-        self.CustomAlphaModel = ValueAlphaModel()
+        self.CustomAlphaModel = SpotifySentimentAlphaModel()
 
         # Portfolio construction model
         self.CustomPortfolioConstructionModel = OptimisationPortfolioConstructionModel(turnover=0.05, max_wt=0.05,
