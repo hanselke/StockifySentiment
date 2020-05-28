@@ -27,7 +27,7 @@ class StockifySentiment(QCAlgorithm):
         for etf in self.etf_list:
             self.AddEquity(etf, Resolution.Minute)
 
-        # Weighting style - normalise or alpha maximisation w/ optimisation
+        # Weighting style - normalise or alpha_max (alpha maximisation w/ optimisation)
         self.weighting_style = 'normalise'
 
         # Market neutral
