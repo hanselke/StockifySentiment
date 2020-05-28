@@ -3,8 +3,8 @@ import pandas as pd
 from io import StringIO
 from datetime import timedelta
 
-from portfolio_construction import OptimisationPortfolioConstructionModel
 from execution import Execution
+from charting import InitCharts, PlotPerformanceChart, PlotExposureChart, PlotCountryExposureChart
 
 
 class StockifySentiment(QCAlgorithm):
@@ -13,7 +13,7 @@ class StockifySentiment(QCAlgorithm):
         self.SetStartDate(2017, 1, 1)  # Set Start Date
         self.SetEndDate(2020, 5, 20)
         self.SetCash(100000)  # Set Strategy Cash
-        self.data, self.etf_list = self.DataSetup()
+        self.data, self.etf_list, self.etf_country = self.DataSetup()
 
         # Add ETFs
         for etf in self.etf_list:
@@ -30,6 +30,13 @@ class StockifySentiment(QCAlgorithm):
         self.Schedule.On(self.DateRules.Every(DayOfWeek.Wednesday), self.TimeRules.BeforeMarketClose('IVV', 210),
                          Action(self.RebalancePortfolio))
 
+        # Init charting
+        InitCharts(self)
+
+        # Schedule charting
+        self.Schedule.On(self.DateRules.Every(DayOfWeek.Wednesday), self.TimeRules.BeforeMarketClose('IVV', 5),
+                         Action(self.PlotCharts))
+
     def OnData(self, data):
         pass
 
@@ -37,6 +44,11 @@ class StockifySentiment(QCAlgorithm):
         date = self.data.loc[self.Time - timedelta(7):self.Time].index.levels[0][0]
         portfolio = self.CustomPortfolioConstructionModel.GenerateOptimalPortfolio(self, self.data.loc[date])
         self.CustomExecution.ExecutePortfolio(self, portfolio)
+
+    def PlotCharts(self):
+        PlotPerformanceChart(self)
+        PlotExposureChart(self)
+        PlotCountryExposureChart(self)
 
     def DataSetup(self):
         df = pd.read_csv(StringIO(
