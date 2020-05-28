@@ -8,8 +8,7 @@ class StockifySentiment(QCAlgorithm):
     def Initialize(self):
         self.SetStartDate(2017, 1, 1)  # Set Start Date
         self.SetCash(100000)  # Set Strategy Cash
-        self.data = pd.DataFrame()
-        self.etf_list = []
+        self.data, self.etf_list = self.DataSetup()
 
         # Add ETFs
         for etf in self.etf_list:
@@ -36,3 +35,10 @@ class StockifySentiment(QCAlgorithm):
         alpha_df = self.CustomAlphaModel.GenerateAlphaScores(self, self.data)
         portfolio = self.CustomPortolioConstructionModel.GenerateOptimalPortfolio(self, alpha_df)
         self.CustomExecution.ExecutePortfolio(self, portfolio)
+
+    def DataSetup(self):
+        df = pd.read_csv(StringIO(self.Download('')))
+        etf_df = pd.read_csv(StringIO(self.Download('')))
+        etf_list = etf_df['etf'].to_list()
+        data = df
+        return data, etf_list
