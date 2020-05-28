@@ -21,17 +21,22 @@ class StockifySentiment(QCAlgorithm):
         self.SetStartDate(2017, 1, 1)  # Set Start Date
         self.SetEndDate(2020, 5, 20)
         self.SetCash(100000)  # Set Strategy Cash
-        self.data, self.etf_list, self.etf_country = self.DataSetup()
-
-        # Add ETFs
-        for etf in self.etf_list:
-            self.AddEquity(etf, Resolution.Minute)
 
         # Weighting style - normalise or alpha_max (alpha maximisation w/ optimisation)
         self.weighting_style = 'normalise'
 
         # Market neutral
         self.mkt_neutral = True
+
+        # Audio feature to use
+        self.audio_feature = 'valence'
+
+        # Get data
+        self.data, self.etf_list, self.etf_country = self.DataSetup()
+
+        # Add ETFs
+        for etf in self.etf_list:
+            self.AddEquity(etf, Resolution.Minute)
 
         # Portfolio construction model
         self.CustomPortfolioConstructionModel = OptimisationPortfolioConstructionModel(turnover=1, max_wt=0.2,
@@ -75,9 +80,9 @@ class StockifySentiment(QCAlgorithm):
     def DataSetup(self):
         df = pd.read_csv(StringIO(
             self.Download('https://raw.githubusercontent.com/Ollie-Hooper/StockifySentiment/master/data/scores.csv')))
-        data = df[['date', 'country', 's_valence']].copy()
+        data = df[['date', 'country', f's_{self.audio_feature}']].copy()
         data['date'] = pd.to_datetime(data['date'])
-        data.rename(columns={'s_valence': 'alpha_score'}, inplace=True)
+        data.rename(columns={f's_{self.audio_feature}': 'alpha_score'}, inplace=True)
         etf_df = pd.read_csv(StringIO(
             self.Download('https://raw.githubusercontent.com/Ollie-Hooper/StockifySentiment/master/data/etf.csv')))
         data = pd.merge(data, etf_df)
