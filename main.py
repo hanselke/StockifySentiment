@@ -3,7 +3,6 @@ import pandas as pd
 from io import StringIO
 from datetime import timedelta
 
-from alpha_model import SpotifySentimentAlphaModel
 from portfolio_construction import OptimisationPortfolioConstructionModel
 from execution import Execution
 
