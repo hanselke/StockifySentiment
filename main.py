@@ -61,15 +61,16 @@ class StockifySentiment(QCAlgorithm):
         pass
 
     def RebalancePortfolio(self):
+        df = self.data.loc[self.Time - timedelta(7):self.Time].reset_index().set_index('symbol')
+        
         if self.weighting_style == 'normalise':
-            portfolio = normalise(
-                self.data.loc[self.Time - timedelta(7):self.Time].reset_index().set_index('symbol')['alpha_score'],
-                equal_ls=self.mkt_neutral)
+            portfolio = normalise(df['alpha_score'], equal_ls=self.mkt_neutral)
         elif self.weighting_style == 'alpha_max':
-            df = self.data.loc[self.Time - timedelta(7):self.Time].reset_index().set_index('symbol')[['alpha_score']]
+            df = df[['alpha_score']]
             portfolio = self.CustomPortfolioConstructionModel.GenerateOptimalPortfolio(self, df)
         else:
             raise Exception('Invalid weighting style')
+        
         self.CustomExecution.ExecutePortfolio(self, portfolio)
 
     def PlotCharts(self):
